@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 """
-"" 21th AUG 2025 ::: Irfan Habeeb Gazi
+"" 21st AUG 2025 ::: Irfan Habeeb Gazi
 "" 24th AUG 2025 ::: Vivek Halder
 "" 9th SEP 2025 ::: Surjayan Kar
 ""
@@ -34,6 +34,11 @@
 ""    The remaining curve parameters will be generated randomly.
 ""    sage KeyGeneration.py <Mode=3> <Bits>
 ""
+"" The public / private key pair are additionally saved to two seperate files,
+"" ecc_public_key.txt and ecc_private_key.txt in the current working directory in JSON format.
+"" This serves as the persistent store for the generated keys, which can be used in future
+"" for encryption / decryption. Please refer to Encryption.py / Decryption.py for more details.
+""
 "" <Sample Input/Output Sets>
 ""
 "" INPUT 1:-
@@ -53,7 +58,7 @@
 "" Generator G = (12 : 2 : 1)
 "" Private Key (scalar mod q): 14
 "" Public Key (point): (9 : 15 : 1)
-"" Time Taken = 0.75s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 0.75s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 2:-
 "" Mode = 1
@@ -67,7 +72,7 @@
 "" Generator G = (22 : 21 : 1)
 "" Private Key (scalar mod q): 1
 "" Public Key (point): (22 : 21 : 1)
-"" Time Taken = 0.75s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 0.75s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 3:-
 "" Mode = 2
@@ -80,7 +85,7 @@
 "" Generator G = (55066263022277343669578718895168534326250603453777594175500187360389116729240 : 32670510020758816978083085130507043184471273380659243275938904335757337482424 : 1)
 "" Private Key (scalar mod q): 29021016459232706789186322220791135419842867329588552320355761916659955141289
 "" Public Key (point): (74199934061742352277479740564507324138411616448181072549634363409191656855326 : 36364381465393420939967928665194862299455368884398756420657581822897070807092 : 1)
-"" Time Taken = 0.95s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 0.95s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 4:-
 "" Mode = 3
@@ -93,7 +98,7 @@
 "" Generator G = (15 : 6 : 1)
 "" Private Key (scalar mod q): 3
 "" Public Key (point): (11 : 8 : 1)
-"" Time Taken = 0.76s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 0.76s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 5:-
 "" Mode = 0
@@ -112,7 +117,7 @@
 "" Generator G = (56637119735112556676803805625465195495 : 138347011707034180834772335167024668467 : 1)
 "" Private Key (scalar mod q): 2234101151657213417
 "" Public Key (point): (92776700886180934713646129660892550603 : 15730881493556840037980909091901598635 : 1)" Time Taken = 0.12 Sec (Linux x86_64)"
-"" Time Taken = 0.78s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 0.78s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 6:-
 "" Mode = 1
@@ -126,7 +131,7 @@
 "" Generator G = (185044437768815005974499897910819333463 : 32898134685307147819107535620013780325 : 1)
 "" Private Key (scalar mod q): 27067074713073
 "" Public Key (point): (191945957228654284066840980435483025091 : 5571787734137215789978890296338585959 : 1)
-"" Time Taken = 0.80s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 0.80s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 7:-
 "" Mode = 2
@@ -139,7 +144,7 @@
 "" Generator G = (9 : 14781619447589544791020593568409986887264606134616475288964881837755586237401 : 1)
 "" Private Key (scalar mod q): 6280492694137048552125600780687406650025121449631737549316946596676252384382
 "" Public Key (point): (51885453843249473905695560995509728478073761805791663156234216576257664730160 : 34879757084333187750047713052074580028317511821684536887863856916853124460977 : 1)
-"" Time Talken = 0.78s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Talken = 0.78s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 8:-
 "" Mode = 3
@@ -152,10 +157,43 @@
 "" Generator G = (1218558127851732328018907506971368872346321217533345772758449036236694305870 : 2776357186138637912531536531320990515035023235924619976620587373545042322970 : 1)
 "" Private Key (scalar mod q): 26895762238325103660873616040114029819
 "" Public Key (point): (42816172632848740663231636207608199981226698986945745962571470527884671199876 : 74110368433330564047438851503058966373109924480475243279566010966193443693010 : 1)
-"" Time Taken = 5.1s (Linux x86_64 - 12th Gen Intel(R) Core(TM) i5-12450H)
+"" Time Taken = 5.1s (Linux x86_64 - ASUS TUF 2022)
+""
+"" INPUT 9:-
+"" Mode = 0
+"" Base_Field = 23
+"" Degree = 2
+"" Coeff_a1 = 15*a
+"" Coeff_a2 = 7*a
+"" Coeff_a3 = 15*a + 3
+"" Coeff_a4 = 1
+"" Coeff_a6 = 2
+"" OUTPUT 9:-
+"" Field: Finite Field in a of size 23^2
+"" Curve: Elliptic Curve defined by y^2 + 15*a*x*y + (15*a+3)*y = x^3 + 7*a*x^2 + x + 2 over Finite Field in a of size 23^2
+"" Group order |E(K)| = 514 = 257 * 2
+"" Using subgroup of prime order q = 257 (≈ 9 bits)
+"" Generator G = (14*a + 21 : 4*a + 8 : 1)
+"" Private Key (scalar mod q): 147
+"" Public Key (point): (9*a + 22 : 4*a : 1) 
+"" Time Taken = 0.67s (Linux x86_64 - ASUS TUF 2022)
+""
+"" INPUT 10:-
+"" Mode = 3
+"" Bits = 512
+"" OUTPUT 10:-
+"" Field: Finite Field of size 8869665144807667184160533361914500345240693369047847399042807114698592960130492527442491012529180201587084504449309098496944897278148396876996868641829109
+"" Curve: Elliptic Curve defined by y^2 + 59049729017315553666478943487321048973449343929009894129181234973239075327804298597865255632719293229952833928971469824081944513244711503694211186512607*x*y + 5562259715811637310425959796134519112113558049833463508340255905181834616704686298273865345735648021960000652275003124818835279436903110875024084934491443*y = x^3 + 145310528550826388012127277981750923752644716688535413861694364003142666688194702908138957710187193841098718448669707982534116475046431200043245136200565*x^2 + 5903230388036477427567816557799279508837701754755859579753815373433658932280666240670278539681865507107288743540381216664180997792727081516020720736704889*x + 2445957735916535690033211653302029625244570737485643759152595112566936762919326347104808616770104351681197423153070201004911180239135490331618630731752047 over Finite Field of size 8869665144807667184160533361914500345240693369047847399042807114698592960130492527442491012529180201587084504449309098496944897278148396876996868641829109
+"" Group order |E(K)| = 8869665144807667184160533361914500345240693369047847399042807114698592960130578254859598830473417695960845124283097788424440614325880729291759850074316351 = 412654672724166410729588239192386037579520461 * 21494158993169764025901263063810697420995880288470995261898408979091556537985547149504813568707516038247570491
+"" Using subgroup of prime order q = 412654672724166410729588239192386037579520461 (≈ 149 bits)
+"" Generator G = (8504955427650704656893154489345919221165489081476858819957146018870944132016650263728292689931683612123732157688474612593109312408415324390326130832733613 : 975975180005062260554483409360421884654441987343088877760277166307675153268000938214722676458958244550154696727481933923395937528978548261569772697911684 : 1)
+"" Private Key (scalar mod q): 225857426619647566868404969301180012539039870
+"" Public Key (point): (3254433442252266738458837461474254536571774342340299458014031998943158351722667944574410964551908981173493518933019189284268434350808133371155706326738186 : 4194895666432287196989341793736396588870884847465713054911235898656278004675279992261349811247754157181878107659908392342450191212124817603934298595292443 : 1)
+"" Time Taken = 47 mins 48.34s (Linux x86_64 - ASUS TUF 2022)
 """
 
 from sage.all import *
+import json
 import sys
 
 # Make Field and Elliptic Curve available globally
@@ -367,16 +405,11 @@ def setup_curve_with_bits(bits, retries=64):
         p}) after {retries} attempts.")
 
 
-def main():
-    if len(sys.argv) < 3:
-        die("Not Enough Arguments!" + f"\n{USAGE1}" + "           OR" + f"\n{
-            USAGE2}" + "           OR" + f"\n{USAGE3}" + "           OR" + f"\n{USAGE4}")
-
-    try:
-        mode = int(sys.argv[1])
-    except Exception:
-        die("Mode must be an integer (0, 1, 2, or 3).")
-
+def generate_keypair(mode, args):
+    """
+    Generate elliptic curve parameters and keypair based on mode and arguments.
+    Returns a dictionary with all relevant parameters.
+    """
     K = None
     E = None
     G = None
@@ -385,48 +418,36 @@ def main():
     N = None
 
     if mode == 0:
-        if len(sys.argv) != 9:
+        if len(args) != 7:
             die(f"Problem with Arguments!\n{USAGE1}")
-        try:
-            base_field = int(sys.argv[2])
-            degree = int(sys.argv[3])
-            coeffs_str = sys.argv[4:9]
-            K, E = setup_curve_with_params(base_field, degree, coeffs_str)
-            G, q, h, N = pick_prime_order_generator(E)
-        except Exception as e:
-            die(f"Error parsing arguments: {e}")
-
+        base_field = int(args[0])
+        degree = int(args[1])
+        coeffs_str = args[2:7]
+        K, E = setup_curve_with_params(base_field, degree, coeffs_str)
+        G, q, h, N = pick_prime_order_generator(E)
     elif mode == 1:
-        if len(sys.argv) != 4:
+        if len(args) != 2:
             die(f"Problem with Arguments!\n{USAGE2}")
-        try:
-            base_field = int(sys.argv[2])
-            degree = int(sys.argv[3])
-            K, E = setup_curve_random(base_field, degree)
-            G, q, h, N = pick_prime_order_generator(E)
-        except Exception as e:
-            die(f"Error parsing arguments: {e}")
-
+        base_field = int(args[0])
+        degree = int(args[1])
+        K, E = setup_curve_random(base_field, degree)
+        G, q, h, N = pick_prime_order_generator(E)
     elif mode == 2:
-        if len(sys.argv) != 3:
+        if len(args) != 1:
             die(f"Problem with Arguments!\n{USAGE3}")
-        curve_name = sys.argv[2]
-        try:
-            K, E, G, q, h = setup_predefined_curve(curve_name)
-            N = q * h
-        except Exception as e:
-            die(f"Error setting up predefined curve: {e}")
-
+        curve_name = args[0]
+        K, E, G, q, h = setup_predefined_curve(curve_name)
+        base_field = K.order()
+        degree = 1
+        N = q * h
     elif mode == 3:
-        if len(sys.argv) != 3:
+        if len(args) != 1:
             die(f"Problem with Arguments!\n{USAGE4}")
-        try:
-            bits = int(sys.argv[2])
-            K, E = setup_curve_with_bits(bits)
-            G, q, h, N = pick_prime_order_generator(E)
-        except Exception as e:
-            die(f"Error parsing arguments: {e}")
-
+        bits = int(args[0])
+        K, E = setup_curve_with_bits(bits)
+        base_field = K.order()
+        degree = 1
+        G, q, h, N = pick_prime_order_generator(E)
     else:
         die("Invalid Mode! Please choose a valid mode (0, 1, 2, or 3)." + f"\n{USAGE1}" + "           OR" + f"\n{
             USAGE2}" + "           OR" + f"\n{USAGE3}" + "           OR" + f"\n{USAGE4}")
@@ -434,16 +455,70 @@ def main():
     if G is None:
         die("Failed to derive a prime-order generator.")
 
-    print(f"Field: {K}")
-    print(f"Curve: {E}")
-    print(f"Group order |E(K)| = {N} = {q} * {h}")
-    print(f"Using subgroup of prime order q = {q} (≈ {q.nbits()} bits)")
-    print(f"Generator G = {G}")
-
     sk = Integer(randint(1, q - 1))
     pk = sk * G
-    print(f"Private Key (scalar mod q): {sk}")
-    print(f"Public Key (point): {pk}")
+
+    return {
+        "field": K,
+        "curve": E,
+        "group_order": N,
+        "prime_order": q,
+        "cofactor": h,
+        "generator": G,
+        "private_key": sk,
+        "public_key": pk,
+        "base_field": base_field,
+        "field_degree": degree,
+    }
+
+
+def write_key_files_json(params, pub_filename="ecc_public_key.txt", priv_filename="ecc_private_key.txt"):
+    # Write public key data as JSON
+    coefficients = params['curve'].a_invariants()
+
+    pub_data = {
+        "public_key": str(params['public_key']),
+        "generator": str(params['generator']),
+        "coefficients": str(coefficients),
+        "base_field": str(params['base_field']),
+        "field_degree": str(params['field_degree']),
+    }
+    with open(pub_filename, 'w') as pub_file:
+        json.dump(pub_data, pub_file, indent=2)
+    # Write private key data as JSON
+    priv_data = {
+        "private_key": str(params['private_key'])
+    }
+    with open(priv_filename, 'w') as priv_file:
+        json.dump(priv_data, priv_file, indent=2)
+
+
+def main():
+    if len(sys.argv) < 3:
+        print("Not Enough Arguments!")
+        print(f"\n{USAGE1}")
+        print("           OR")
+        print(f"\n{USAGE2}")
+        print("           OR")
+        print(f"\n{USAGE3}")
+        print("           OR")
+        print(f"\n{USAGE4}")
+        exit(1)
+
+    mode = int(sys.argv[1])
+    args = sys.argv[2:]
+
+    params = generate_keypair(mode, args)
+
+    write_key_files_json(params)
+
+    print(f"Field: {params['field']}")
+    print(f"Curve: {params['curve']}")
+    print(f"Group order |E(K)| = {params['group_order']} = {
+          params['prime_order']} * {params['cofactor']}")
+    print(f"Generator G: {params['generator']}")
+    print(f"Private Key (scalar mod q): {params['private_key']}")
+    print(f"Public Key (point): {params['public_key']}")
 
 
 if __name__ == "__main__":
