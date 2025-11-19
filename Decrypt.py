@@ -64,7 +64,7 @@ def load_json(filename):
 
 def parse_field(base_field, field_degree):
     if field_degree == 1:
-        return GF(field_order)
+        return GF(base_field)
     else:
         return GF((base_field, field_degree), names=('a',))
 
