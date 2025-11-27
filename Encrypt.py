@@ -10,11 +10,17 @@
 "" corresponding files. Please refer to KeyGeneration.py and KeyGenerationUtil.py for more
 "" details. The encrypted message is stored in the file 'ecc_ciphertext.txt'.
 ""
-"" The arguments to be provided to the program are as follows:
-"" 1. <pub_key> : The path to file containing the public key for the cryptosystem. This file also
-"" stores the elliptic curve parameters to be used.
-"" 2. <message> : The message (point) to be encrypted. The point should be a valid point on the
-"" elliptic curve defined in the public key file.
+"" It offers two different modes of operation:
+"" 0: Encrption a single point stored in a file.
+""    In this mode, the user provides the path to the file containing the public key, and a
+""    the path to the .txt file containing the point to  be encrypted. The point should be a
+""    valid point on the elliptic curve defined in the public key file.
+""    sage Encrypt.py ecc_public_key.txt message.txt
+""
+"" 1: Encryption of multiple ASCII characters into a point on the elliptic curve. In this mode,
+""    the user provides the path to the file containing the public key, and the path to the
+""    .txt file containing the characters to be encrypted
+""    sage Encrypt.py ecc_public_key.txt message.txt
 ""
 "" <Sample Input / Output>
 ""
@@ -44,10 +50,13 @@ import json
 from sage.all import *
 
 
-USAGE = "sage Encrypt.py <pub_key> <message>"
-if (len(sys.argv) != 3):
+USAGE1 = "sage Encrypt.py 0 <pub_key> <message>"
+USAGE2 = "sage Encrypt.py 1 <pub_key> <message>"
+if (len(sys.argv) != 4):
     print("Invalid Arguments!")
-    print(f"\nUsage: {USAGE}")
+    print(f"\nUsage: {USAGE1}")
+    print("OR")
+    print(f"Usage: {USAGE2}")
     exit(1)
 
 
@@ -94,8 +103,44 @@ def parse_point(point_str, E):
     return point
 
 
+def encrypt_point(M, G, public_key):
+    # Generate receiver's ephemeral key
+    q = G.order()
+    k = randint(1, q - 1)
+
+    ciphertext = {
+        "C1": str(k * G),
+        "C2": str(M + k * public_key)
+    }
+
+    return ciphertext
+
+
+def map_chars_to_point(chunk, E):
+    X_candid = sum([ord(c) << (8 * i) for i, c in enumerate(chunk)])
+    X_candid = X_candid << 8  # Padding X by 8 bits
+
+    # Check if X is a valid x-coordinate on the curve
+    for _ in range(256):
+        # Check if value of X is greater than field size
+        if X_candid >= E.base_field().order():
+            raise ValueError(
+                f"Cannot map characters to point: Exceeded field size. X = {
+                    X_candid}, Field Size = {E.base_field().order()}"
+            )
+
+        try:
+            P = E.lift_x(E.base_field()(X_candid))
+            return P
+        except Exception:
+            X_candid += 1
+
+    return None
+
+
 def main():
-    pub = load_json(sys.argv[1])
+    mode = int(sys.argv[1])
+    pub = load_json(sys.argv[2])
 
     base_field = int(pub['base_field'].strip())
     field_degree = int(pub['field_degree'].strip())
@@ -110,18 +155,21 @@ def main():
     G = parse_point(generator_str, E)
     public_key = parse_point(public_key_str, E)
 
-    with open(sys.argv[2], 'r') as msg_file:
+    with open(sys.argv[3], 'r') as msg_file:
         msg_str = msg_file.read().strip()
-    M = parse_point(msg_str, E)
 
-    # Generate receiver's ephemeral key
-    q = G.order()
-    k = randint(1, q - 1)
-
-    ciphertext = {
-        "C1": str(k * G),
-        "C2": str(M + k * public_key)
-    }
+    if mode == 0:
+        M = parse_point(msg_str, E)
+        ciphertext = encrypt_point(M, G, public_key)
+    else:
+        if (field_degree > 1):
+            raise ValueError(
+                f"Message mapping not supported for extended fields. Field Degree = {
+                    field_degree}"
+            )
+        msg_str.strip()
+        M = map_chars_to_point(msg_str, E)
+        ciphertext = encrypt_point(M, G, public_key)
 
     with open('ecc_ciphertext.txt', 'w') as cipher_file:
         json.dump(ciphertext, cipher_file, indent=2)
