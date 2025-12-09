@@ -51,6 +51,8 @@
 "" "C1": "(14 : 11*a + 12 : 1)",
 "" "C2": "(14*a + 13 : 16*a + 12 : 1)"
 "" }
+"" 
+"" Time Taken = 0.687s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 2:
 "" ecc_public_key.txt:-
@@ -70,6 +72,44 @@
 "" "C1": "(31894743248758571947732118035776289069590431853604163486169561500672450626470 : 17022476366370823369904501506306283319725097315687443836148662080126252360294 : 1)",
 "" "C2": "(32710928097340310354198571803413987008186855435925972928960974582482408697236 : 27263700611213709848986074990488688584781464945924217181237791975065342270456 : 1)"
 "" }
+""
+"" Time Taken - 1.975s (Linux x86_64 - ASUS TUF 2022)
+""
+"" INPUT 3:
+"" ecc_public_key.txt:-
+"" {
+"" public_key": "(7 : 13*a + 1 : 1)",
+"" "generator": "(8 : 16*a + 7 : 1)",
+"" "coefficients": "(2, 3, 5, 7, 11)",
+"" "base_field": "17",
+"" "field_degree": "2"
+"" }
+""
+"" message.txt:-
+"" (15 : 10*a + 3 : 1)
+"" (4 : 13 : 1)
+"" (10*a + 11 : 14*a + 15 : 1)
+""
+"" OUTPUT 3:
+"" ecc_ciphertext.txt:-
+"" {
+""  "ciphertexts": [
+""     {
+""      "C1": "(10 : 11*a + 16 : 1)",
+""       "C2": "(2 : 16*a + 13 : 1)"
+""     },
+""     {
+""       "C1": "(11 : 14*a + 5 : 1)",
+""       "C2": "(15*a + 11 : 10*a + 5 : 1)"
+""     },
+""     {
+""       "C1": "(2 : 16*a + 13 : 1)",
+""       "C2": "(16*a + 14 : 9*a + 6 : 1)"
+""     }
+""   ]
+"" }
+""
+"" Time Taken - 0.703s (Linux x86_64 - ASUS TUF 2022)
 """
 
 import sys
@@ -110,16 +150,18 @@ def parse_coeffs(coeffs_str, K):
 
 def parse_point(point_str, E):
     point_str = point_str.strip()
-    
+
     if not (point_str.startswith('(') and point_str.endswith(')')):
-        raise ValueError("Point must be in parentheses, e.g. '(x : y : z)': " + repr(point_str))
-    
+        raise ValueError(
+            "Point must be in parentheses, e.g. '(x : y : z)': " + repr(point_str))
+
     point_str = point_str[1:-1]
-    
+
     coords = [s.strip() for s in point_str.split(':')]
 
     if len(coords) != 3:
-        raise ValueError("Invalid point format (expected 3 coords) : " + repr(point_str))
+        raise ValueError(
+            "Invalid point format (expected 3 coords) : " + repr(point_str))
 
     try:
         x = E.base_field()(coords[0])
@@ -142,15 +184,15 @@ def parse_point(point_str, E):
 def encrypt_point(M, G, public_key):
     # Generate receiver's ephemeral key
     q = G.order()
-    
+
     if q is None:
         raise ValueError("Generator order unknown. Check public key file.")
-    
+
     # convert q to integer if it's not
     q_int = int(q)
     if q_int <= 1:
         raise ValueError("Invalid order of the generator point G.")
-    
+
     # Generate random k in [1, q-1], making sure it is a Cryptographically Secure Pseudo-Random Number
     k = secrets.randbelow(q_int - 1) + 1  # 1 <= k < q
 
@@ -171,9 +213,9 @@ def map_chars_to_point(chunk, E):
         # Check if value of X is greater than field size
         if X_candid >= E.base_field().order():
             raise ValueError(
-                f"Cannot map characters to point: Exceeded field size. X = {X_candid}, Field Size = {int(E.base_field().order())}"
+                f"Cannot map characters to point: Exceeded field size. X = {
+                    X_candid}, Field Size = {int(E.base_field().order())}"
             )
-
 
         try:
             P = E.lift_x(E.base_field()(X_candid))
@@ -210,28 +252,31 @@ def main():
     elif mode == 1:
         if (field_degree > 1):
             raise ValueError(
-                f"Message mapping not supported for extended fields. Field Degree = {field_degree}"
+                f"Message mapping not supported for extended fields. Field Degree = {
+                    field_degree}"
             )
         msg_str.strip()
         M = map_chars_to_point(msg_str, E)
         ciphertext = encrypt_point(M, G, public_key)
     elif mode == 2:
-        points_strs = [line.strip() for line in msg_str.splitlines() if line.strip()]
-        
+        points_strs = [line.strip()
+                       for line in msg_str.splitlines() if line.strip()]
+
         if not points_strs:
-            raise ValueError("Mode 2: No valid points found in the message file.")
-        
+            raise ValueError(
+                "Mode 2: No valid points found in the message file.")
+
         ciphertext_list = []
-        
+
         for point_str in points_strs:
             M = parse_point(point_str, E)
             ct = encrypt_point(M, G, public_key)
             ciphertext_list.append(ct)
-        
+
         ciphertext = {
             "ciphertexts": ciphertext_list
         }
-        
+
     with open('ecc_ciphertext.txt', 'w') as cipher_file:
         json.dump(ciphertext, cipher_file, indent=2)
 

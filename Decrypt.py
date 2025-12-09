@@ -48,6 +48,8 @@
 "" OUTPUT 1:
 "" Decrypted Message Point M: (12 : 2 : 1)
 ""
+"" Time Taken - 0.678s (Linux x86_64 - ASUS TUF 2022)
+""
 "" INPUT 2:
 "" ecc_public_key.txt:-
 "" {
@@ -73,6 +75,8 @@
 ""
 "" OUTPUT 2:
 "" Decrypted ASCII Message: blue
+""
+"" Time Taken - 0.692s (Linux x86_64 - ASUS TUF 2022)
 """
 
 import sys
