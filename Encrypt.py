@@ -31,7 +31,7 @@
 "" <Sample Input / Output>
 ""
 "" INPUT 1:
-"" Mode = 0
+"" Mode: 0
 "" ecc_public_key.txt:-
 "" {
 "" "public_key": "(7 : 13*a + 1 : 1)",
@@ -55,6 +55,7 @@
 "" Time Taken = 0.687s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 2:
+"" Mode: 1
 "" ecc_public_key.txt:-
 "" {
 "" "public_key": "(33826589915974876451303538711434911780771211905044168883402609147833006747732 : 27566994943980390140539650248379388081128599148510027697475930812689256311866 : 1)",
@@ -76,6 +77,7 @@
 "" Time Taken - 1.975s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 3:
+"" Mode: 2
 "" ecc_public_key.txt:-
 "" {
 "" public_key": "(7 : 13*a + 1 : 1)",
@@ -110,6 +112,35 @@
 "" }
 ""
 "" Time Taken - 0.703s (Linux x86_64 - ASUS TUF 2022)
+""
+"" INPUT 4:
+"" Mode: 1
+"" ecc_public_key.txt:-
+"" {
+"" "public_key": "(33826589915974876451303538711434911780771211905044168883402609147833006747732 : 27566994943980390140539650248379388081128599148510027697475930812689256311866 : 1)",
+"" "generator": "(9 : 14781619447589544791020593568409986887264606134616475288964881837755586237401 : 1)",
+"" "coefficients": "(0, 486662, 0, 1, 0)",
+"" "base_field": "57896044618658097711785492504343953926634992332820282019728792003956564819949","" "field_degree": "1"
+"" }
+""
+"" message.txt:-
+"" The quick brown fox jumps over the lazy dog
+""
+"" OUTPUT 2:
+"" ecc_ciphertext.txt:-
+"" {
+"" ciphertexts": [
+""    {
+""      "C1": "(20815982239122993643622767541771961564887253860261512560754879795060097725112 : 55408428385145383705922096339116423514930700177087028503036406932835341516802 : 1)",
+""      "C2": "(48233646863068336176964712480031258957406235660873962579024979464585708529465 : 24618939384991165563721350249248700078771366989521946070788597462322721153669 : 1)"
+""    },
+""    {
+""      "C1": "(36971451079847139219210658549707416903951166537404000702159304417996217383612 : 26732569358899894481268901458737827723046460095990255169837292721849592696499 : 1)",
+""      "C2": "(28944799660895256369062781483953959837795325626070653946445615325591514953561 : 12869617992734804709246125272408337918664077358362930214567005125069595503998 : 1)"
+""    }, ...... (output truncated for brevity)
+"" ]
+""
+"" Time Taken - 1.996s (Linux x86_64 - ASUS TUF 2022)
 """
 
 import sys
@@ -256,8 +287,18 @@ def main():
                     field_degree}"
             )
         msg_str.strip()
-        M = map_chars_to_point(msg_str, E)
-        ciphertext = encrypt_point(M, G, public_key)
+        # Break message into chunks of 4 characters
+        chunks = [msg_str[i:i + 4] for i in range(0, len(msg_str), 4)]
+
+        ciphertext_list = []
+
+        for chunk in chunks:
+            M = map_chars_to_point(chunk, E)
+            ciphertext_list.append(encrypt_point(M, G, public_key))
+
+        ciphertext = {
+            "ciphertexts": ciphertext_list
+        }
     elif mode == 2:
         points_strs = [line.strip()
                        for line in msg_str.splitlines() if line.strip()]
