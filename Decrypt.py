@@ -1,7 +1,7 @@
 """
-"" 20th OCT 2025 ::: Irfan Habeeb Gazi
+"" 9th DEC 2025 ::: Irfan Habeeb Gazi
 "" 29th OCT 2025 ::: Surjayan Kar
-"" 1st NOV 2025 ::: Vivek Halder
+"" 10th DEC 2025 ::: Vivek Halder
 ""
 "" Usage: sage Decrypt.py <priv_key> <pub_key> <ciphertext>
 ""
@@ -261,7 +261,9 @@ def main():
             for ct in ciphertext['ciphertexts']:
                 C1, C2 = parse_ciphertext(ct, E)
                 M = C2 - private_key * C1
-                msg += map_point_to_chars(M)
+                chunk = map_point_to_chars(M)
+                print("Decrypted Chunk: " + chunk)
+                msg += chunk
             print("Decrypted ASCII Message: " + msg)
     elif mode == 2:
         points = []

@@ -1,6 +1,6 @@
 """
-"" 19th OCT 2025 ::: Irfan Habeeb Gazi
-"" 28th OCT 2025 ::: Vivek Halder
+"" 9th DEC 2025 ::: Irfan Habeeb Gazi
+"" 10th OCT 2025 ::: Vivek Halder
 "" 29th OCT 2025 ::: Surjayan Kar
 ""
 "" Usage: sage Encrypt.py <pub_key> <message>
@@ -10,7 +10,7 @@
 "" corresponding files. Please refer to KeyGeneration.py and KeyGenerationUtil.py for more
 "" details. The encrypted message is stored in the file 'ecc_ciphertext.txt'.
 ""
-"" It offers two different modes of operation:
+"" It offers three different modes of operation:
 "" 0: Encrption a single point stored in a file.
 ""    In this mode, the user provides the path to the file containing the public key, and a
 ""    the path to the .txt file containing the point to  be encrypted. The point should be a
@@ -61,7 +61,8 @@
 "" "public_key": "(33826589915974876451303538711434911780771211905044168883402609147833006747732 : 27566994943980390140539650248379388081128599148510027697475930812689256311866 : 1)",
 "" "generator": "(9 : 14781619447589544791020593568409986887264606134616475288964881837755586237401 : 1)",
 "" "coefficients": "(0, 486662, 0, 1, 0)",
-"" "base_field": "57896044618658097711785492504343953926634992332820282019728792003956564819949","" "field_degree": "1"
+"" "base_field": "57896044618658097711785492504343953926634992332820282019728792003956564819949",
+"" "field_degree": "1"
 "" }
 ""
 "" message.txt:-
@@ -294,6 +295,7 @@ def main():
 
         for chunk in chunks:
             M = map_chars_to_point(chunk, E)
+            print(f"Mapped chunk '{chunk}' to point {M}")
             ciphertext_list.append(encrypt_point(M, G, public_key))
 
         ciphertext = {
