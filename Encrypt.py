@@ -110,16 +110,18 @@ def parse_coeffs(coeffs_str, K):
 
 def parse_point(point_str, E):
     point_str = point_str.strip()
-    
+
     if not (point_str.startswith('(') and point_str.endswith(')')):
-        raise ValueError("Point must be in parentheses, e.g. '(x : y : z)': " + repr(point_str))
-    
+        raise ValueError(
+            "Point must be in parentheses, e.g. '(x : y : z)': " + repr(point_str))
+
     point_str = point_str[1:-1]
-    
+
     coords = [s.strip() for s in point_str.split(':')]
 
     if len(coords) != 3:
-        raise ValueError("Invalid point format (expected 3 coords) : " + repr(point_str))
+        raise ValueError(
+            "Invalid point format (expected 3 coords) : " + repr(point_str))
 
     try:
         x = E.base_field()(coords[0])
@@ -142,15 +144,15 @@ def parse_point(point_str, E):
 def encrypt_point(M, G, public_key):
     # Generate receiver's ephemeral key
     q = G.order()
-    
+
     if q is None:
         raise ValueError("Generator order unknown. Check public key file.")
-    
+
     # convert q to integer if it's not
     q_int = int(q)
     if q_int <= 1:
         raise ValueError("Invalid order of the generator point G.")
-    
+
     # Generate random k in [1, q-1], making sure it is a Cryptographically Secure Pseudo-Random Number
     k = secrets.randbelow(q_int - 1) + 1  # 1 <= k < q
 
@@ -174,7 +176,6 @@ def map_chars_to_point(chunk, E):
                 f"Cannot map characters to point: Exceeded field size. X = {X_candid}, Field Size = {int(E.base_field().order())}"
             )
 
-
         try:
             P = E.lift_x(E.base_field()(X_candid))
             return P
@@ -183,6 +184,10 @@ def map_chars_to_point(chunk, E):
 
     return None
 
+
+def compute_chunk_size(E):
+    p = E.base_field().order()
+    return (p.nbits() - 8) // 8
 
 def main():
     mode = int(sys.argv[1])
@@ -207,31 +212,50 @@ def main():
     if mode == 0:
         M = parse_point(msg_str, E)
         ciphertext = encrypt_point(M, G, public_key)
+
     elif mode == 1:
         if (field_degree > 1):
             raise ValueError(
                 f"Message mapping not supported for extended fields. Field Degree = {field_degree}"
             )
+
         msg_str.strip()
-        M = map_chars_to_point(msg_str, E)
-        ciphertext = encrypt_point(M, G, public_key)
-    elif mode == 2:
-        points_strs = [line.strip() for line in msg_str.splitlines() if line.strip()]
-        
-        if not points_strs:
-            raise ValueError("Mode 2: No valid points found in the message file.")
-        
+
+        # Break message into dynamically sized chunks
+        chunk_size = compute_chunk_size(E)
+        chunks = [msg_str[i:i + chunk_size]
+                  for i in range(0, len(msg_str), chunk_size)]
+
         ciphertext_list = []
-        
+
+        for chunk in chunks:
+            M = map_chars_to_point(chunk, E)
+            print(f"Mapped chunk '{chunk}' to point {M}")
+            ciphertext_list.append(encrypt_point(M, G, public_key))
+
+        ciphertext = {
+            "ciphertexts": ciphertext_list
+        }
+
+    elif mode == 2:
+        points_strs = [line.strip()
+                       for line in msg_str.splitlines() if line.strip()]
+
+        if not points_strs:
+            raise ValueError(
+                "Mode 2: No valid points found in the message file.")
+
+        ciphertext_list = []
+
         for point_str in points_strs:
             M = parse_point(point_str, E)
             ct = encrypt_point(M, G, public_key)
             ciphertext_list.append(ct)
-        
+
         ciphertext = {
             "ciphertexts": ciphertext_list
         }
-        
+
     with open('ecc_ciphertext.txt', 'w') as cipher_file:
         json.dump(ciphertext, cipher_file, indent=2)
 
