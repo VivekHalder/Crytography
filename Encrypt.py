@@ -140,8 +140,7 @@ def parse_point(point_str, E):
 
     return point
 
-
-def encrypt_point(M, G, public_key):
+def generate_ephemeral_key(G):
     # Generate receiver's ephemeral key
     q = G.order()
 
@@ -155,6 +154,11 @@ def encrypt_point(M, G, public_key):
 
     # Generate random k in [1, q-1], making sure it is a Cryptographically Secure Pseudo-Random Number
     k = secrets.randbelow(q_int - 1) + 1  # 1 <= k < q
+
+    return k
+
+def encrypt_point(M, G, public_key):
+    k = generate_ephemeral_key(G)
 
     ciphertext = {
         "C1": str(k * G),
@@ -188,6 +192,16 @@ def map_chars_to_point(chunk, E):
 def compute_chunk_size(E):
     p = E.base_field().order()
     return (p.nbits() - 8) // 8
+
+def encrypt_blocks(M_blocks, G, public_key):
+    k = generate_ephemeral_key(G)
+
+    C1 = k * G
+    ciphertexts = []
+    for M in M_blocks:
+        C2 = M + k * public_key
+        ciphertexts.append({"C2": str(C2)})
+    return {"C1": str(C1), "ciphertexts": ciphertexts}
 
 def main():
     mode = int(sys.argv[1])
@@ -226,16 +240,13 @@ def main():
         chunks = [msg_str[i:i + chunk_size]
                   for i in range(0, len(msg_str), chunk_size)]
 
-        ciphertext_list = []
-
+        M_blocks = []
         for chunk in chunks:
             M = map_chars_to_point(chunk, E)
             print(f"Mapped chunk '{chunk}' to point {M}")
-            ciphertext_list.append(encrypt_point(M, G, public_key))
+            M_blocks.append(M)
 
-        ciphertext = {
-            "ciphertexts": ciphertext_list
-        }
+        ciphertext = encrypt_blocks(M_blocks, G, public_key)
 
     elif mode == 2:
         points_strs = [line.strip()
@@ -245,16 +256,12 @@ def main():
             raise ValueError(
                 "Mode 2: No valid points found in the message file.")
 
-        ciphertext_list = []
-
+        M_blocks = []
         for point_str in points_strs:
             M = parse_point(point_str, E)
-            ct = encrypt_point(M, G, public_key)
-            ciphertext_list.append(ct)
+            M_blocks.append(M)
 
-        ciphertext = {
-            "ciphertexts": ciphertext_list
-        }
+        ciphertext = encrypt_blocks(M_blocks, G, public_key) 
 
     with open('ecc_ciphertext.txt', 'w') as cipher_file:
         json.dump(ciphertext, cipher_file, indent=2)

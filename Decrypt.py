@@ -256,10 +256,11 @@ def main():
         M = C2 - private_key * C1
         print("Decrypted Message Point M: " + str(M))
     elif mode == 1:
+        C1 = parse_point(ciphertext['C1'], E)
         if 'ciphertexts' in ciphertext:
             msg = ""
             for ct in ciphertext['ciphertexts']:
-                C1, C2 = parse_ciphertext(ct, E)
+                C2 = parse_point(ct['C2'], E)
                 M = C2 - private_key * C1
                 chunk = map_point_to_chars(M)
                 print("Decrypted Chunk: " + chunk)
@@ -271,8 +272,9 @@ def main():
             raise ValueError(
                 "Mode 2: No valid ciphertexts found in the ciphertext file."
             )
+        C1 = parse_point(ciphertext['C1'], E)
         for ct in ciphertext['ciphertexts']:
-            C1, C2 = parse_ciphertext(ct, E)
+            C2 = parse_point(ct['C2'], E)
             M = C2 - private_key * C1
             points.append(M)
         print("Decrypted Message Points M: ")
