@@ -30,9 +30,9 @@
 ""    sage KeyGeneration.py <Mode=2> <Curve_Name>
 ""
 "" 3: Generate a new curve with specified number of bits for the prime field.
-""    In this mode, the user must provide the number of bits for the prime field.
+""    In this mode, the user must provide the number of bits for the prime field and degree of the curve.
 ""    The remaining curve parameters will be generated randomly.
-""    sage KeyGeneration.py <Mode=3> <Bits>
+""    sage KeyGeneration.py <Mode=3> <Bits> <Degree>
 ""
 "" The public / private key pair are additionally saved to two seperate files,
 "" ecc_public_key.txt and ecc_private_key.txt in the current working directory in JSON format.
@@ -90,14 +90,14 @@
 "" INPUT 4:-
 "" Mode = 3
 "" Bits = 5
+"" Degree = 2
 "" OUTPUT 4:-
-"" Field: Finite Field of size 23
-"" Curve: Elliptic Curve defined by y^2 + 5*x*y + 7*y = x^3 + 12*x^2 + 20*x + 18 over Finite Field of size 23
-"" Group order |E(K)| = 29 = 29 * 1
-"" Using subgroup of prime order q = 29 (≈ 5 bits)
-"" Generator G = (15 : 6 : 1)
-"" Private Key (scalar mod q): 3
-"" Public Key (point): (11 : 8 : 1)
+"" Field: Finite Field in a of size 29^2
+"" Curve: Elliptic Curve defined by y^2 + (20*a+28)*x*y + (5*a+26)*y = x^3 + (3*a+17)*x^2 + (a+7)*x + (25*a+10) over Finite Field in a of size 29^2
+"" Group order |E(K)| = 852 = 71 * 12
+"" Generator G: (2*a + 25 : a + 21 : 1)
+"" Private Key (scalar mod q): 18
+"" Public Key (point): (14 : 9*a + 6 : 1)
 "" Time Taken = 0.76s (Linux x86_64 - ASUS TUF 2022)
 ""
 "" INPUT 5:-
@@ -149,6 +149,7 @@
 "" INPUT 8:-
 "" Mode = 3
 "" Bits = 256
+"" Degree = 1
 "" OUTPUT 8:-
 "" Field: Finite Field of size 80231902115021755678039147812442535246327574221053469221669196592970904776607
 "" Curve: Elliptic Curve defined by y^2 + 10162344738799003467612015563455964643777110697422901003729755032366293167684*x*y + 77130752187081080723453632835804996654719575065085247790892902639283510437344*y = x^3 + 25033615423618065815306752943662785470883758012297121914332083906515846485195*x^2 + 15646868640810435075778840679535166373356744192540792807725281759589814979852*x + 42226170828265745384600909103508331371400826004715159800743928990772960255686 over Finite Field of size 80231902115021755678039147812442535246327574221053469221669196592970904776607
@@ -181,6 +182,7 @@
 "" INPUT 10:-
 "" Mode = 3
 "" Bits = 512
+"" Degree = 1
 "" OUTPUT 10:-
 "" Field: Finite Field of size 8869665144807667184160533361914500345240693369047847399042807114698592960130492527442491012529180201587084504449309098496944897278148396876996868641829109
 "" Curve: Elliptic Curve defined by y^2 + 59049729017315553666478943487321048973449343929009894129181234973239075327804298597865255632719293229952833928971469824081944513244711503694211186512607*x*y + 5562259715811637310425959796134519112113558049833463508340255905181834616704686298273865345735648021960000652275003124818835279436903110875024084934491443*y = x^3 + 145310528550826388012127277981750923752644716688535413861694364003142666688194702908138957710187193841098718448669707982534116475046431200043245136200565*x^2 + 5903230388036477427567816557799279508837701754755859579753815373433658932280666240670278539681865507107288743540381216664180997792727081516020720736704889*x + 2445957735916535690033211653302029625244570737485643759152595112566936762919326347104808616770104351681197423153070201004911180239135490331618630731752047 over Finite Field of size 8869665144807667184160533361914500345240693369047847399042807114698592960130492527442491012529180201587084504449309098496944897278148396876996868641829109
@@ -203,7 +205,7 @@ E = None
 USAGE1 = "sage KeyGeneration.py <Mode=0> <Base_Field> <Degree> <Coeff_a1> <Coeff_a2> <Coeff_a3> <Coeff_a4> <Coeff_a6>"
 USAGE2 = "sage KeyGeneration.py <Mode=1> <Base_Field> <Degree>"
 USAGE3 = "sage KeyGeneration.py <Mode=2> <Curve_Name>"
-USAGE4 = "sage KeyGeneration.py <Mode=3> <Bits>"
+USAGE4 = "sage KeyGeneration.py <Mode=3> <Bits> <Degree>"
 
 
 def die(message, code=1):
@@ -381,7 +383,7 @@ def setup_predefined_curve(name):
         name}. Try: secp256k1, P-256, curve25519, ed25519.")
 
 
-def setup_curve_with_bits(bits, retries=64):
+def setup_curve_with_bits(bits, degree, retries=64):
     """
     Setup an elliptic curve with a prime field of specified bit length.
     """
@@ -389,7 +391,7 @@ def setup_curve_with_bits(bits, retries=64):
     upper_bound = (Integer(1) << bits) - 1
 
     p = random_prime(upper_bound, lbound=lower_bound)
-    K = build_field(p, 1)
+    K = build_field(p, degree)
 
     for _ in range(retries):
         coeff = [K.random_element() for _ in range(5)]
@@ -441,12 +443,12 @@ def generate_keypair(mode, args):
         degree = 1
         N = q * h
     elif mode == 3:
-        if len(args) != 1:
+        if len(args) != 2:
             die(f"Problem with Arguments!\n{USAGE4}")
         bits = int(args[0])
-        K, E = setup_curve_with_bits(bits)
+        degree = int(args[1])
+        K, E = setup_curve_with_bits(bits, degree)
         base_field = K.order()
-        degree = 1
         G, q, h, N = pick_prime_order_generator(E)
     else:
         die("Invalid Mode! Please choose a valid mode (0, 1, 2, or 3)." + f"\n{USAGE1}" + "           OR" + f"\n{
