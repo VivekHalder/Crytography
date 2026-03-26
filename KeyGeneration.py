@@ -1,7 +1,5 @@
-#!/usr/bin/python3
-
 """
-"" 21st AUG 2025 ::: Irfan Habeeb Gazi
+"" 27th FEB 2026 ::: Irfan Habeeb Gazi
 "" 24th AUG 2025 ::: Vivek Halder
 "" 9th SEP 2025 ::: Surjayan Kar
 ""
@@ -198,14 +196,19 @@ from sage.all import *
 import json
 import sys
 
+# Global Verbosity Flag for Debug Printing
+VERBOSE = "--debug" in sys.argv
+if VERBOSE:
+    sys.argv.remove("--debug")
+
 # Make Field and Elliptic Curve available globally
 K = None
 E = None
 
-USAGE1 = "sage KeyGeneration.py <Mode=0> <Base_Field> <Degree> <Coeff_a1> <Coeff_a2> <Coeff_a3> <Coeff_a4> <Coeff_a6>"
-USAGE2 = "sage KeyGeneration.py <Mode=1> <Base_Field> <Degree>"
-USAGE3 = "sage KeyGeneration.py <Mode=2> <Curve_Name>"
-USAGE4 = "sage KeyGeneration.py <Mode=3> <Bits> <Degree>"
+USAGE1 = "sage KeyGeneration.py <Mode=0> <Base_Field> <Degree> <Coeff_a1> <Coeff_a2> <Coeff_a3> <Coeff_a4> <Coeff_a6> [--debug]"
+USAGE2 = "sage KeyGeneration.py <Mode=1> <Base_Field> <Degree> [--debug]"
+USAGE3 = "sage KeyGeneration.py <Mode=2> <Curve_Name> [--debug]"
+USAGE4 = "sage KeyGeneration.py <Mode=3> <Bits> <Degree> [--debug]"
 
 
 def die(message, code=1):
@@ -272,9 +275,8 @@ def pick_prime_order_generator(E, curve_order=None, min_bits=160, max_tries=64):
     N = curve_order if curve_order is not None else E.order()
     fac = factor(N)
     q = max([p for p, e in fac for _ in [0] if p.is_prime()])
-    if q.nbits() < min_bits:
-        print(f"Warning: largest prime factor is only {
-              q.nbits()} bits; not cryptographically strong.", file=sys.stderr)
+    if VERBOSE and q.nbits() < min_bits:
+        print(f"Warning: largest prime factor is only {q.nbits()} bits; not cryptographically strong.", file=sys.stderr)
     h = N // q
     for _ in range(max_tries):
         P = E.random_point()
@@ -312,8 +314,7 @@ def setup_curve_random(base_field, degree, retries=64):
                 return K, E
         except Exception:
             pass
-    die(f"Failed to generate a random non-singular curve over GF({
-        base_field}^{degree}) after {retries} attempts.")
+    die(f"Failed to generate a random non-singular curve over GF({base_field}^{degree}) after {retries} attempts.")
 
 
 def setup_predefined_curve(name):
@@ -379,8 +380,7 @@ def setup_predefined_curve(name):
         h = 8
         return K, E, G, n, h
 
-    die(f"Unsupported curve name: {
-        name}. Try: secp256k1, P-256, curve25519, ed25519.")
+    die(f"Unsupported curve name: {name}. Try: secp256k1, P-256, curve25519, ed25519.")
 
 
 def setup_curve_with_bits(bits, degree, retries=64):
@@ -403,8 +403,7 @@ def setup_curve_with_bits(bits, degree, retries=64):
         except Exception:
             pass
 
-    die(f"Failed to find a non-singular curve over GF({
-        p}) after {retries} attempts.")
+    die(f"Failed to find a non-singular curve over GF({p}) after {retries} attempts.")
 
 
 def generate_keypair(mode, args):
@@ -514,13 +513,13 @@ def main():
 
     write_key_files_json(params)
 
-    print(f"Field: {params['field']}")
-    print(f"Curve: {params['curve']}")
-    print(f"Group order |E(K)| = {params['group_order']} = {
-          params['prime_order']} * {params['cofactor']}")
-    print(f"Generator G: {params['generator']}")
-    print(f"Private Key (scalar mod q): {params['private_key']}")
-    print(f"Public Key (point): {params['public_key']}")
+    if VERBOSE:
+        print(f"Field: {params['field']}")
+        print(f"Curve: {params['curve']}")
+        print(f"Group order |E(K)| = {params['group_order']} = {params['prime_order']} * {params['cofactor']}")
+        print(f"Generator G: {params['generator']}")
+        print(f"Private Key (scalar mod q): {params['private_key']}")
+        print(f"Public Key (point): {params['public_key']}")
 
 
 if __name__ == "__main__":
