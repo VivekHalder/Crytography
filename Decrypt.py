@@ -209,7 +209,6 @@ def main():
                 C2 = parse_point(ct['C2'], E)
                 M = C2 - private_key * C1
                 chunk = map_point_to_chars(M)
-                print("Decrypted Chunk: " + chunk)
                 msg += chunk
             print("Decrypted ASCII Message: " + msg)
     elif mode == 2:

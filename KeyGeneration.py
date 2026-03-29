@@ -361,8 +361,8 @@ def setup_predefined_curve(name):
         h = 1
         return K, E, G, n, h
 
-    # Ed25519 (Twisted Edwards form)
-    if name.lower() == "ed25519":
+    # Curve25519 (Twisted Edwards form)
+    if name.lower() == "curve25519":
         p = 2**255 - 19
         K = GF(p)
         A = K(486662)
@@ -380,7 +380,7 @@ def setup_predefined_curve(name):
         h = 8
         return K, E, G, n, h
 
-    die(f"Unsupported curve name: {name}. Try: secp256k1, P-256, curve25519, ed25519.")
+    die(f"Unsupported curve name: {name}. Try: secp256k1, P-256, curve25519.")
 
 
 def setup_curve_with_bits(bits, degree, retries=64):
@@ -394,7 +394,7 @@ def setup_curve_with_bits(bits, degree, retries=64):
     K = build_field(p, degree)
 
     for _ in range(retries):
-        coeff = [K.random_element() for _ in range(5)]
+        coeff = [K.random_element() for _ in range(2)]
 
         try:
             E = EllipticCurve(K, coeff)
