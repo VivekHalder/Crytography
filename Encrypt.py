@@ -92,6 +92,7 @@
 import sys
 import json
 import secrets
+import time
 from sage.all import *
 
 USAGE1 = "sage Encrypt.py 1 <pub_key> <message>"
@@ -222,6 +223,8 @@ def encrypt_blocks(M_blocks, G, public_key):
     return {"C1": str(C1), "ciphertexts": ciphertexts}
 
 def main():
+    t_start = time.time()
+
     mode = int(sys.argv[1])
     pub = load_json(sys.argv[2])
 
@@ -285,6 +288,7 @@ def main():
         json.dump(ciphertext, cipher_file, indent=2)
 
     print("Encryption complete. Ciphertext saved to 'ecc_ciphertext.txt'.")
+    print(f"Time Taken: {time.time() - t_start:.3f}s")
 
 
 if __name__ == "__main__":

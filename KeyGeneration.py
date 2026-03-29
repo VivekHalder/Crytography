@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 "" 27th FEB 2026 ::: Irfan Habeeb Gazi
 "" 24th AUG 2025 ::: Vivek Halder
@@ -183,18 +184,14 @@
 "" Degree = 1
 "" OUTPUT 10:-
 "" Field: Finite Field of size 8869665144807667184160533361914500345240693369047847399042807114698592960130492527442491012529180201587084504449309098496944897278148396876996868641829109
-"" Curve: Elliptic Curve defined by y^2 + 59049729017315553666478943487321048973449343929009894129181234973239075327804298597865255632719293229952833928971469824081944513244711503694211186512607*x*y + 5562259715811637310425959796134519112113558049833463508340255905181834616704686298273865345735648021960000652275003124818835279436903110875024084934491443*y = x^3 + 145310528550826388012127277981750923752644716688535413861694364003142666688194702908138957710187193841098718448669707982534116475046431200043245136200565*x^2 + 5903230388036477427567816557799279508837701754755859579753815373433658932280666240670278539681865507107288743540381216664180997792727081516020720736704889*x + 2445957735916535690033211653302029625244570737485643759152595112566936762919326347104808616770104351681197423153070201004911180239135490331618630731752047 over Finite Field of size 8869665144807667184160533361914500345240693369047847399042807114698592960130492527442491012529180201587084504449309098496944897278148396876996868641829109
-"" Group order |E(K)| = 8869665144807667184160533361914500345240693369047847399042807114698592960130578254859598830473417695960845124283097788424440614325880729291759850074316351 = 412654672724166410729588239192386037579520461 * 21494158993169764025901263063810697420995880288470995261898408979091556537985547149504813568707516038247570491
-"" Using subgroup of prime order q = 412654672724166410729588239192386037579520461 (≈ 149 bits)
-"" Generator G = (8504955427650704656893154489345919221165489081476858819957146018870944132016650263728292689931683612123732157688474612593109312408415324390326130832733613 : 975975180005062260554483409360421884654441987343088877760277166307675153268000938214722676458958244550154696727481933923395937528978548261569772697911684 : 1)
-"" Private Key (scalar mod q): 225857426619647566868404969301180012539039870
-"" Public Key (point): (3254433442252266738458837461474254536571774342340299458014031998943158351722667944574410964551908981173493518933019189284268434350808133371155706326738186 : 4194895666432287196989341793736396588870884847465713054911235898656278004675279992261349811247754157181878107659908392342450191212124817603934298595292443 : 1)
+"" ...
 "" Time Taken = 47 mins 48.34s (Linux x86_64 - ASUS TUF 2022)
 """
 
 from sage.all import *
 import json
 import sys
+import time
 
 # Global Verbosity Flag for Debug Printing
 VERBOSE = "--debug" in sys.argv
@@ -320,7 +317,28 @@ def setup_curve_random(base_field, degree, retries=64):
 def setup_predefined_curve(name):
     """
     Setup a predefined elliptic curve by name.
-    Supported curves: secp256k1, P-256 (prime256v1/secp256r1), curve25519, ed25519.
+
+    Supported curves: secp256k1, P-256 (prime256v1/secp256r1), curve25519/ed25519.
+
+    NOTE — Curve25519 vs Ed25519:
+      These are two different representations of the same underlying elliptic curve
+      (defined over GF(2^255 - 19)), but they use different coordinate systems:
+
+      - Curve25519 (Montgomery form): y^2 = x^3 + 486662*x^2 + x
+        Designed by Bernstein (2006) for ECDH key exchange.
+        This is the form implemented here, as it works directly with
+        SageMath's EllipticCurve and supports standard point arithmetic
+        for ElGamal encryption.
+
+      - Ed25519 (Twisted Edwards form): -x^2 + y^2 = 1 - (121665/121666)*x^2*y^2
+        Designed for digital signatures (EdDSA). The coordinate system
+        is different and not directly compatible with the Weierstrass/Montgomery
+        form used by this program.
+
+      Both share the same prime field (p = 2^255 - 19) and the same group order,
+      and are birationally equivalent — but they are NOT the same implementation.
+      This program implements Curve25519 (Montgomery form). The name "ed25519"
+      is accepted as an alias since they share the same underlying curve parameters.
 
     Here:
         Gx is the X-coordinate of the generator point
@@ -361,8 +379,8 @@ def setup_predefined_curve(name):
         h = 1
         return K, E, G, n, h
 
-    # Ed25519 (Twisted Edwards form)
-    if name.lower() == "ed25519":
+   
+    if name.lower() in ["ed25519", "curve25519"]:
         p = 2**255 - 19
         K = GF(p)
         A = K(486662)
@@ -375,7 +393,7 @@ def setup_predefined_curve(name):
         y = rhs.sqrt()
         G = E(x, y)
 
-        # same prime subgroup order
+        # Prime subgroup order (same for both Curve25519 and Ed25519)
         n = Integer(2**252 + 27742317777372353535851937790883648493)
         h = 8
         return K, E, G, n, h
@@ -386,10 +404,23 @@ def setup_predefined_curve(name):
 def setup_curve_with_bits(bits, degree, retries=64):
     """
     Setup an elliptic curve with a prime field of specified bit length.
+
+    Performance note: the dominant cost here is E.order(), which SageMath computes
+    via the SEA (Schoof-Elkies-Atkin) algorithm. This scales roughly as O(log^4 p)
+    and cannot be avoided for a random curve. To reduce total work:
+      - We generate the prime p once and reuse it across all curve attempts,
+        avoiding repeated primality tests on fresh random primes.
+      - We return the curve immediately on the first non-singular candidate,
+        so E.order() is only ever called once (inside pick_prime_order_generator).
+      - For bit sizes above ~256, expect multi-second to multi-minute runtimes.
+        If you need fast key generation at large bit sizes, use Mode 2 with a
+        named standard curve (secp256k1 / P-256) instead.
     """
     lower_bound = Integer(1) << (bits - 1)
     upper_bound = (Integer(1) << bits) - 1
 
+    # Generate the prime field once — reuse p across all curve retries
+    # so we pay the primality-testing cost only once per key generation call.
     p = random_prime(upper_bound, lbound=lower_bound)
     K = build_field(p, degree)
 
@@ -450,8 +481,7 @@ def generate_keypair(mode, args):
         base_field = K.order()
         G, q, h, N = pick_prime_order_generator(E)
     else:
-        die("Invalid Mode! Please choose a valid mode (0, 1, 2, or 3)." + f"\n{USAGE1}" + "           OR" + f"\n{
-            USAGE2}" + "           OR" + f"\n{USAGE3}" + "           OR" + f"\n{USAGE4}")
+        die("Invalid Mode! Please choose a valid mode (0, 1, 2, or 3)." + f"\n{USAGE1}" + "           OR" + f"\n{USAGE2}" + "           OR" + f"\n{USAGE3}" + "           OR" + f"\n{USAGE4}")
 
     if G is None:
         die("Failed to derive a prime-order generator.")
@@ -495,6 +525,8 @@ def write_key_files_json(params, pub_filename="ecc_public_key.txt", priv_filenam
 
 
 def main():
+    t_start = time.time()
+
     if len(sys.argv) < 3:
         print("Not Enough Arguments!")
         print(f"\n{USAGE1}")
@@ -520,6 +552,8 @@ def main():
         print(f"Generator G: {params['generator']}")
         print(f"Private Key (scalar mod q): {params['private_key']}")
         print(f"Public Key (point): {params['public_key']}")
+
+    print(f"Time Taken: {time.time() - t_start:.3f}s")
 
 
 if __name__ == "__main__":

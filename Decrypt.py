@@ -98,6 +98,7 @@
 
 import sys
 import json
+import time
 from sage.all import *
 
 USAGE1 = "sage Decrypt.py 1 <priv_key> <pub_key> <ciphertext>"
@@ -182,6 +183,8 @@ def map_point_to_chars(P):
 
 
 def main():
+    t_start = time.time()
+
     mode = int(sys.argv[1])
     priv = load_json(sys.argv[2])
     pub = load_json(sys.argv[3])
@@ -205,11 +208,12 @@ def main():
         C1 = parse_point(ciphertext['C1'], E)
         if 'ciphertexts' in ciphertext:
             msg = ""
+            # Precompute sk * C1 once — avoids repeating scalar multiplication per block
+            skC1 = private_key * C1
             for ct in ciphertext['ciphertexts']:
                 C2 = parse_point(ct['C2'], E)
-                M = C2 - private_key * C1
+                M = C2 - skC1
                 chunk = map_point_to_chars(M)
-                print("Decrypted Chunk: " + chunk)
                 msg += chunk
             print("Decrypted ASCII Message: " + msg)
     elif mode == 2:
@@ -219,15 +223,19 @@ def main():
                 "Mode 2: No valid ciphertexts found in the ciphertext file."
             )
         C1 = parse_point(ciphertext['C1'], E)
+        # Precompute sk * C1 once — avoids repeating scalar multiplication per block
+        skC1 = private_key * C1
         for ct in ciphertext['ciphertexts']:
             C2 = parse_point(ct['C2'], E)
-            M = C2 - private_key * C1
+            M = C2 - skC1
             points.append(M)
         print("Decrypted Message Points M: ")
         for pt in points:
             print(str(pt))
     else:
         raise ValueError("Invalid mode! Please choose a valid mode (1 or 2).")
+
+    print(f"Time Taken: {time.time() - t_start:.3f}s")
 
 
 if __name__ == "__main__":
