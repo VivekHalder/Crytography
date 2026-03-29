@@ -195,6 +195,7 @@
 from sage.all import *
 import json
 import sys
+import time
 
 # Global Verbosity Flag for Debug Printing
 VERBOSE = "--debug" in sys.argv
@@ -318,15 +319,6 @@ def setup_curve_random(base_field, degree, retries=64):
 
 
 def setup_predefined_curve(name):
-    """
-    Setup a predefined elliptic curve by name.
-    Supported curves: secp256k1, P-256 (prime256v1/secp256r1), curve25519, ed25519.
-
-    Here:
-        Gx is the X-coordinate of the generator point
-        Gy is the Y-coordinate of the generator point
-        G is the generator point
-    """
     name = name.strip()
 
     # secp256k1
@@ -363,6 +355,7 @@ def setup_predefined_curve(name):
 
     # Curve25519 (Twisted Edwards form)
     if name.lower() == "curve25519":
+   
         p = 2**255 - 19
         K = GF(p)
         A = K(486662)
@@ -375,7 +368,7 @@ def setup_predefined_curve(name):
         y = rhs.sqrt()
         G = E(x, y)
 
-        # same prime subgroup order
+        # Prime subgroup order (same for both Curve25519 and Ed25519)
         n = Integer(2**252 + 27742317777372353535851937790883648493)
         h = 8
         return K, E, G, n, h
@@ -384,9 +377,6 @@ def setup_predefined_curve(name):
 
 
 def setup_curve_with_bits(bits, degree, retries=64):
-    """
-    Setup an elliptic curve with a prime field of specified bit length.
-    """
     lower_bound = Integer(1) << (bits - 1)
     upper_bound = (Integer(1) << bits) - 1
 
@@ -450,8 +440,7 @@ def generate_keypair(mode, args):
         base_field = K.order()
         G, q, h, N = pick_prime_order_generator(E)
     else:
-        die("Invalid Mode! Please choose a valid mode (0, 1, 2, or 3)." + f"\n{USAGE1}" + "           OR" + f"\n{
-            USAGE2}" + "           OR" + f"\n{USAGE3}" + "           OR" + f"\n{USAGE4}")
+        die("Invalid Mode! Please choose a valid mode (0, 1, 2, or 3)." + f"\n{USAGE1}" + "           OR" + f"\n{USAGE2}" + "           OR" + f"\n{USAGE3}" + "           OR" + f"\n{USAGE4}")
 
     if G is None:
         die("Failed to derive a prime-order generator.")
@@ -495,6 +484,8 @@ def write_key_files_json(params, pub_filename="ecc_public_key.txt", priv_filenam
 
 
 def main():
+    t_start = time.time()
+
     if len(sys.argv) < 3:
         print("Not Enough Arguments!")
         print(f"\n{USAGE1}")
@@ -520,6 +511,8 @@ def main():
         print(f"Generator G: {params['generator']}")
         print(f"Private Key (scalar mod q): {params['private_key']}")
         print(f"Public Key (point): {params['public_key']}")
+
+    print(f"Time Taken: {time.time() - t_start:.3f}s")
 
 
 if __name__ == "__main__":
