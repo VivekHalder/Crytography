@@ -94,15 +94,13 @@ import json
 import secrets
 from sage.all import *
 
-USAGE2 = "sage Encrypt.py 1 <pub_key> <message>"
-USAGE3 = "sage Encrypt.py 2 <pub_key> <message>"
+USAGE1 = "sage Encrypt.py 1 <pub_key> <message>"
+USAGE2 = "sage Encrypt.py 2 <pub_key> <message>"
 if (len(sys.argv) != 4):
     print("Invalid Arguments!")
-    print(f"\nUsage: {USAGE1}")
+    print(f"\nASCII Encryption: {USAGE1}")
     print("OR")
-    print(f"Usage: {USAGE2}")
-    print("OR")
-    print(f"Usage: {USAGE3}")
+    print(f"Point Encryption: {USAGE2}")
     exit(1)
 
 

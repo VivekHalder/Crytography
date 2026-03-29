@@ -104,9 +104,9 @@ USAGE1 = "sage Decrypt.py 1 <priv_key> <pub_key> <ciphertext>"
 USAGE2 = "sage Decrypt.py 2 <priv_key> <pub_key> <ciphertext>"
 if (len(sys.argv) != 5):
     print("Invalid Arguments!")
-    print(f"\nUsage: {USAGE1}")
+    print(f"\nASCII Decryption: {USAGE1}")
     print("OR")
-    print(f"\nUsage: {USAGE2}")
+    print(f"Point Decryption: {USAGE2}")
     exit(1)
 
 
