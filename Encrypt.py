@@ -95,8 +95,13 @@ import secrets
 import time
 from sage.all import *
 
-USAGE1 = "sage Encrypt.py 1 <pub_key> <message>"
-USAGE2 = "sage Encrypt.py 2 <pub_key> <message>"
+# Global Verbosity Flag for Debug Printing
+VERBOSE = "--debug" in sys.argv
+if VERBOSE:
+    sys.argv.remove("--debug")
+
+USAGE1 = "sage Encrypt.py 1 <pub_key> <message> [--debug]"
+USAGE2 = "sage Encrypt.py 2 <pub_key> <message> [--debug]"
 if (len(sys.argv) != 4):
     print("Invalid Arguments!")
     print(f"\nASCII Encryption: {USAGE1}")
@@ -256,13 +261,15 @@ def main():
         chunk_size = compute_chunk_size(E)
         chunks = [msg_str[i:i + chunk_size]
                   for i in range(0, len(msg_str), chunk_size)]
-        print(f"Given Field Size: {int(E.base_field().order())}, Chunk Size: {chunk_size} characters.\n")
-        print(f"Splitting message into {len(chunks)} chunks:\n")
+        if VERBOSE:
+            print(f"Given Field Size: {int(E.base_field().order())}, Chunk Size: {chunk_size} characters.\n")
+            print(f"Splitting message into {len(chunks)} chunks:\n")
 
         M_blocks = []
         for chunk in chunks:
             M = map_chars_to_point(chunk, E)
-            print(f"Mapped chunk '{chunk}' to point {M}")
+            if VERBOSE:
+                print(f"Mapped chunk '{chunk}' to point {M}")
             M_blocks.append(M)
 
         ciphertext = encrypt_blocks(M_blocks, G, public_key)
