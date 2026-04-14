@@ -159,6 +159,7 @@ def parse_point(point_str, E):
 
     return point
 
+
 def generate_ephemeral_key(G):
     # Generate receiver's ephemeral key
     q = G.order()
@@ -176,6 +177,7 @@ def generate_ephemeral_key(G):
 
     return k
 
+
 def encrypt_point(M, G, public_key):
     k = generate_ephemeral_key(G)
 
@@ -188,7 +190,9 @@ def encrypt_point(M, G, public_key):
 
 
 def map_chars_to_point(chunk, E):
-    X_candid = sum([ord(c) << (8 * i) for i, c in enumerate(chunk)])
+    byte_data = chunk if isinstance(chunk, bytes) else chunk.encode('utf-8')
+
+    X_candid = int.from_bytes(byte_data, 'little')
     X_candid = X_candid << 8  # Padding X by 8 bits
 
     # Check if X is a valid x-coordinate on the curve
@@ -196,7 +200,8 @@ def map_chars_to_point(chunk, E):
         # Check if value of X is greater than field size
         if X_candid >= E.base_field().order():
             raise ValueError(
-                f"Cannot map characters to point: Exceeded field size. X = {X_candid}, Field Size = {int(E.base_field().order())}"
+                f"Cannot map characters to point: Exceeded field size. X = {
+                    X_candid}, Field Size = {int(E.base_field().order())}"
             )
 
         try:
@@ -213,9 +218,11 @@ def compute_chunk_size(E):
 
     if p.nbits() < 16:
         raise ValueError(
-            f"Field size too small for character encoding. Field Size = {p}. Minimum required field size is 16 bits (65535)."
+            f"Field size too small for character encoding. Field Size = {
+                p}. Minimum required field size is 16 bits (65535)."
         )
-    return (p.nbits() - 8) // 8
+    return (p.nbits() - 9) // 8
+
 
 def encrypt_blocks(M_blocks, G, public_key):
     k = generate_ephemeral_key(G)
@@ -226,6 +233,7 @@ def encrypt_blocks(M_blocks, G, public_key):
         C2 = M + k * public_key
         ciphertexts.append({"C2": str(C2)})
     return {"C1": str(C1), "ciphertexts": ciphertexts}
+
 
 def main():
     t_start = time.time()
@@ -252,17 +260,26 @@ def main():
     if mode == 1:
         if (field_degree > 1):
             raise ValueError(
-                f"Message mapping not supported for extended fields. Field Degree = {field_degree}"
+                f"Message mapping not supported for extended fields. Field Degree = {
+                    field_degree}"
             )
 
         msg_str.strip()
 
         # Break message into dynamically sized chunks
+        msg_bytes = msg_str.encode('utf-8')
         chunk_size = compute_chunk_size(E)
-        chunks = [msg_str[i:i + chunk_size]
-                  for i in range(0, len(msg_str), chunk_size)]
+        if (chunk_size <= 0):
+            raise ValueError(
+                f"Field size too small to encode characters. Field Size = {
+                    int(E.base_field().order())}. Please use a larger field."
+            )
+
+        chunks = [msg_bytes[i:i + chunk_size]
+                  for i in range(0, len(msg_bytes), chunk_size)]
         if VERBOSE:
-            print(f"Given Field Size: {int(E.base_field().order())}, Chunk Size: {chunk_size} characters.\n")
+            print(f"Given Field Size: {int(E.base_field().order())}, Chunk Size: {
+                  chunk_size} characters.\n")
             print(f"Splitting message into {len(chunks)} chunks:\n")
 
         M_blocks = []
@@ -287,7 +304,7 @@ def main():
             M = parse_point(point_str, E)
             M_blocks.append(M)
 
-        ciphertext = encrypt_blocks(M_blocks, G, public_key) 
+        ciphertext = encrypt_blocks(M_blocks, G, public_key)
     else:
         raise ValueError("Invalid mode! Please choose a valid mode (1 or 2).")
 

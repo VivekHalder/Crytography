@@ -170,17 +170,14 @@ def map_point_to_chars(P):
         return ""
 
     X = Integer(P[0])
-    msg_chars = ""
-
     X = X >> 8  # Remove padding byte
 
+    byte_list = []
     while X > 0:
-        char_code = X & 0xFF
-        msg_chars = msg_chars + chr(char_code)
+        byte_list.append(int(X & 0xFF))
         X = X >> 8
 
-    return msg_chars
-
+    return bytes(byte_list)
 
 def main():
     t_start = time.time()
@@ -208,13 +205,19 @@ def main():
         C1 = parse_point(ciphertext['C1'], E)
         if 'ciphertexts' in ciphertext:
             msg = ""
+            all_bytes = bytearray()
             skC1 = private_key * C1
+
             for ct in ciphertext['ciphertexts']:
                 C2 = parse_point(ct['C2'], E)
                 M = C2 - skC1
-                chunk = map_point_to_chars(M)
-                msg += chunk
-            print("Decrypted ASCII Message: " + msg)
+                chunk_bytes = map_point_to_chars(M)
+                all_bytes.extend(chunk_bytes)
+            try:
+                msg = all_bytes.decode('utf-8')
+                print("Decrypted ASCII Message: " + msg)
+            except UnicodeDecodeError as e:
+                print(f"Decryption Error: Final byte sequence in not a valid UTF-8. {e}")
     elif mode == 2:
         points = []
         if not ('ciphertexts' in ciphertext):
