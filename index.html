@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ECC Toolkit</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <h1>ECC&nbsp;Toolkit</h1>
+      <span class="subtitle">Elliptic Curve Cryptography over GF(p<sup>n</sup>)</span>
+    </div>
+    <div class="status" id="health">checking sage…</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="keygen">1 · Key Generation</button>
+    <button class="tab" data-tab="encrypt">2 · Encrypt</button>
+    <button class="tab" data-tab="decrypt">3 · Decrypt</button>
+    <button class="tab" data-tab="about">About</button>
+  </nav>
+
+  <main>
+    <!-- =============== KEYGEN =============== -->
+    <section class="panel active" id="panel-keygen">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>Generate keypair</h2>
+          <p class="muted">Pick a mode. Same semantics as <code>sage KeyGeneration.py</code>.</p>
+
+          <label class="field">
+            <span>Mode</span>
+            <select id="kg-mode">
+              <option value="0">0 · Specified field + specified coefficients</option>
+              <option value="1">1 · Specified field + random coefficients</option>
+              <option value="2" selected>2 · Predefined curve (secp256k1, P-256, …)</option>
+              <option value="3">3 · Random prime field of N bits</option>
+            </select>
+          </label>
+
+          <!-- Mode 0 -->
+          <div class="mode-block" data-mode="0" hidden>
+            <div class="row">
+              <label class="field">
+                <span>Base field <em>p</em> (prime)</span>
+                <input id="kg0-p" placeholder="e.g. 17" />
+              </label>
+              <label class="field">
+                <span>Degree <em>n</em></span>
+                <input id="kg0-deg" placeholder="1" type="number" min="1" value="1" />
+              </label>
+            </div>
+            <div class="row">
+              <label class="field"><span>a₁</span><input id="kg0-a1" placeholder="2" /></label>
+              <label class="field"><span>a₂</span><input id="kg0-a2" placeholder="3" /></label>
+              <label class="field"><span>a₃</span><input id="kg0-a3" placeholder="5" /></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>a₄</span><input id="kg0-a4" placeholder="7" /></label>
+              <label class="field"><span>a₆</span><input id="kg0-a6" placeholder="11" /></label>
+            </div>
+            <p class="hint">For degree &gt; 1, write coefficients using the generator <code>a</code>, e.g. <code>15*a + 3</code>.</p>
+          </div>
+
+          <!-- Mode 1 -->
+          <div class="mode-block" data-mode="1" hidden>
+            <div class="row">
+              <label class="field">
+                <span>Base field <em>p</em> (prime)</span>
+                <input id="kg1-p" placeholder="23" />
+              </label>
+              <label class="field">
+                <span>Degree <em>n</em></span>
+                <input id="kg1-deg" type="number" min="1" value="1" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Mode 2 -->
+          <div class="mode-block" data-mode="2">
+            <label class="field">
+              <span>Curve name</span>
+              <select id="kg2-name">
+                <option value="secp256k1">secp256k1 (Bitcoin / Ethereum)</option>
+                <option value="P-256">P-256 (NIST prime256v1)</option>
+                <option value="curve25519">Curve25519</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Mode 3 -->
+          <div class="mode-block" data-mode="3" hidden>
+            <div class="row">
+              <label class="field">
+                <span>Bits</span>
+                <input id="kg3-bits" type="number" min="4" max="512" value="64" />
+              </label>
+              <label class="field">
+                <span>Degree</span>
+                <input id="kg3-deg" type="number" min="1" value="1" />
+              </label>
+            </div>
+            <p class="hint warn">Heads up: 256-bit takes ~5s, 512-bit took ~48 minutes on your TUF. Ramp up gradually.</p>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="kg-run">Generate</button>
+            <span class="spinner" id="kg-spin" hidden></span>
+          </div>
+          <div class="error" id="kg-err" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>Output</h2>
+          <p class="muted">Public key flows automatically into the Encrypt tab. Private key into Decrypt.</p>
+
+          <h3>Summary</h3>
+          <pre class="output" id="kg-summary">—</pre>
+
+          <h3>Public key <button class="mini" data-copy="kg-pub">copy</button></h3>
+          <pre class="output json" id="kg-pub">—</pre>
+
+          <h3>Private key <button class="mini" data-copy="kg-priv">copy</button></h3>
+          <pre class="output json" id="kg-priv">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== ENCRYPT =============== -->
+    <section class="panel" id="panel-encrypt">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>Encrypt</h2>
+          <label class="field">
+            <span>Mode</span>
+            <select id="en-mode">
+              <option value="1" selected>1 · ASCII text → points (auto-chunked)</option>
+              <option value="2">2 · Pre-formed points (one per line)</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Public key (JSON)</span>
+            <textarea id="en-pub" rows="8" placeholder='{"public_key": "…", "generator": "…", …}'></textarea>
+          </label>
+
+          <label class="field">
+            <span id="en-msg-label">Message</span>
+            <textarea id="en-msg" rows="6" placeholder="the big brown fox jumped over the lazy dog"></textarea>
+          </label>
+          <p class="hint" id="en-mode-hint">Mode 1 splits the message into chunks sized for the curve's field. Field must be ≥ 16 bits.</p>
+
+          <div class="actions">
+            <button class="primary" id="en-run">Encrypt</button>
+            <span class="spinner" id="en-spin" hidden></span>
+          </div>
+          <div class="error" id="en-err" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>Ciphertext</h2>
+          <h3>Summary</h3>
+          <pre class="output" id="en-summary">—</pre>
+          <h3>JSON <button class="mini" data-copy="en-ct">copy</button></h3>
+          <pre class="output json" id="en-ct">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== DECRYPT =============== -->
+    <section class="panel" id="panel-decrypt">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>Decrypt</h2>
+          <label class="field">
+            <span>Mode</span>
+            <select id="de-mode">
+              <option value="1" selected>1 · ASCII (recover original text)</option>
+              <option value="2">2 · Points (recover message points)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Private key (JSON)</span>
+            <textarea id="de-priv" rows="3" placeholder='{"private_key": "…"}'></textarea>
+          </label>
+          <label class="field">
+            <span>Public key (JSON) — needed for the curve parameters</span>
+            <textarea id="de-pub" rows="6"></textarea>
+          </label>
+          <label class="field">
+            <span>Ciphertext (JSON)</span>
+            <textarea id="de-ct" rows="6"></textarea>
+          </label>
+
+          <div class="actions">
+            <button class="primary" id="de-run">Decrypt</button>
+            <span class="spinner" id="de-spin" hidden></span>
+          </div>
+          <div class="error" id="de-err" hidden></div>
+        </div>
+
+        <div class="card">
+          <h2>Plaintext</h2>
+          <pre class="output" id="de-out">—</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== ABOUT =============== -->
+    <section class="panel" id="panel-about">
+      <div class="card narrow">
+        <h2>About this interface</h2>
+        <p>
+          Web frontend for the ECC toolkit at
+          <a href="https://github.com/VivekHalder/Crytography" target="_blank" rel="noopener">github.com/VivekHalder/Crytography</a>.
+          The browser is doing none of the math. Each request shells out to
+          <code>sage KeyGeneration.py</code>, <code>sage Encrypt.py</code>, or <code>sage Decrypt.py</code>
+          on the server, with arguments built from the form. Output JSON is read back from disk and returned.
+        </p>
+
+        <h3>The protocol</h3>
+        <p>
+          ElGamal-style ECC over a Weierstrass curve <em>E</em> defined over GF(p<sup>n</sup>).
+          Encryption picks a random ephemeral <em>k</em>, sends <em>C₁ = kG</em> and
+          <em>C₂ = M + k·PubKey</em>. Decryption recovers <em>M = C₂ − sk·C₁</em>.
+          ASCII mode (mode 1) packs UTF-8 bytes into the x-coordinate via
+          <code>lift_x</code> with a one-byte trailing nonce so a valid
+          <em>y</em> can be found; mode 2 takes the points directly.
+        </p>
+
+        <h3>Curves available</h3>
+        <p>
+          Mode 0/1/3 build curves dynamically. Mode 2 ships with secp256k1, P-256,
+          and Curve25519 (in its underlying Weierstrass / Montgomery form).
+        </p>
+
+        <h3>Caveats</h3>
+        <p>
+          This is teaching/research code, not a hardened library. Don't encrypt
+          secrets you actually care about with it. For production, use libsodium
+          or the platform's vetted ECDH/HPKE.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
