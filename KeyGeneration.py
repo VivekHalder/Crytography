@@ -197,39 +197,19 @@ import json
 import sys
 import time
 
-# Global Verbosity Flag for Debug Printing
-VERBOSE = "--debug" in sys.argv
-if VERBOSE:
-    sys.argv.remove("--debug")
-
-# Make Field and Elliptic Curve available globally
-K = None
-E = None
-
+VERBOSE = False
 USAGE1 = "sage KeyGeneration.py <Mode=0> <Base_Field> <Degree> <Coeff_a1> <Coeff_a2> <Coeff_a3> <Coeff_a4> <Coeff_a6> [--debug]"
 USAGE2 = "sage KeyGeneration.py <Mode=1> <Base_Field> <Degree> [--debug]"
 USAGE3 = "sage KeyGeneration.py <Mode=2> <Curve_Name> [--debug]"
 USAGE4 = "sage KeyGeneration.py <Mode=3> <Bits> <Degree> [--debug]"
 
+# Make Field and Elliptic Curve available globally
+K = None
+E = None
 
 def die(message, code=1):
     print(f"Error: {message}", file=sys.stderr)
     exit(code)
-
-
-if (len(sys.argv) < 3):
-    print("Not Enough Arguments!")
-    print(f"\n{USAGE1}")
-    print("           OR")
-    print(f"\n{USAGE2}")
-    print("           OR")
-    print(f"\n{USAGE3}")
-    print("           OR")
-    print(f"\n{USAGE4}")
-    exit(1)
-
-Mode = int(sys.argv[1])
-
 
 def is_singular(E) -> bool:
     """
@@ -516,4 +496,22 @@ def main():
 
 
 if __name__ == "__main__":
+    # Global Verbosity Flag for Debug Printing
+    VERBOSE = "--debug" in sys.argv
+    if VERBOSE:
+        sys.argv.remove("--debug")
+ 
+    if (len(sys.argv) < 3):
+        print("Not Enough Arguments!")
+        print(f"\n{USAGE1}")
+        print("           OR")
+        print(f"\n{USAGE2}")
+        print("           OR")
+        print(f"\n{USAGE3}")
+        print("           OR")
+        print(f"\n{USAGE4}")
+        exit(1)
+
+    Mode = int(sys.argv[1])
+
     main()

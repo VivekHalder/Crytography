@@ -101,14 +101,9 @@ import json
 import time
 from sage.all import *
 
+VERBOSE = False
 USAGE1 = "sage Decrypt.py 1 <priv_key> <pub_key> <ciphertext>"
 USAGE2 = "sage Decrypt.py 2 <priv_key> <pub_key> <ciphertext>"
-if (len(sys.argv) != 5):
-    print("Invalid Arguments!")
-    print(f"\nASCII Decryption: {USAGE1}")
-    print("OR")
-    print(f"Point Decryption: {USAGE2}")
-    exit(1)
 
 
 def load_json(filename):
@@ -240,4 +235,11 @@ def main():
 
 
 if __name__ == "__main__":
+    if (len(sys.argv) != 5):
+        print("Invalid Arguments!")
+        print(f"\nASCII Decryption: {USAGE1}")
+        print("OR")
+        print(f"Point Decryption: {USAGE2}")
+        exit(1)
+
     main()

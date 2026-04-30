@@ -95,20 +95,9 @@ import secrets
 import time
 from sage.all import *
 
-# Global Verbosity Flag for Debug Printing
-VERBOSE = "--debug" in sys.argv
-if VERBOSE:
-    sys.argv.remove("--debug")
-
+VERBOSE = False
 USAGE1 = "sage Encrypt.py 1 <pub_key> <message> [--debug]"
 USAGE2 = "sage Encrypt.py 2 <pub_key> <message> [--debug]"
-if (len(sys.argv) != 4):
-    print("Invalid Arguments!")
-    print(f"\nASCII Encryption: {USAGE1}")
-    print("OR")
-    print(f"Point Encryption: {USAGE2}")
-    exit(1)
-
 
 def load_json(filename):
     with open(filename, 'r') as file:
@@ -316,4 +305,16 @@ def main():
 
 
 if __name__ == "__main__":
+    # Global Verbosity Flag for Debug Printing
+    VERBOSE = "--debug" in sys.argv
+    if VERBOSE:
+        sys.argv.remove("--debug")
+
+    if (len(sys.argv) != 4):
+        print("Invalid Arguments!")
+        print(f"\nASCII Encryption: {USAGE1}")
+        print("OR")
+        print(f"Point Encryption: {USAGE2}")
+        exit(1)
+
     main()
