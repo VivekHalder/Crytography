@@ -275,7 +275,7 @@ def main():
         for chunk in chunks:
             M = map_chars_to_point(chunk, E)
             if VERBOSE:
-                print(f"Mapped chunk '{chunk}' to point {M}")
+                print(f"Mapped chunk '{chunk.decode('utf-8')}' to point {M}")
             M_blocks.append(M)
 
         ciphertext = encrypt_blocks(M_blocks, G, public_key)
