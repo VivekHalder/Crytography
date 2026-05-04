@@ -30,7 +30,7 @@ USER root
 # Copy requirements first (before application code) so Docker can cache
 # this layer. If requirements.txt is unchanged, pip install is skipped
 # on subsequent rebuilds, speeding up the build process.
-COPY requirements.txt .
+COPY ./Deployment/requirements.txt .
 
 # Install Python dependencies into the SageMath virtual environment.
 #
@@ -63,8 +63,9 @@ WORKDIR /app
 #     index.html       -- Frontend entry point
 #     app.js           -- Frontend JavaScript logic
 #     styles.css       -- Frontend stylesheet
-COPY KeyGeneration.py Encrypt.py Decrypt.py \
-     server.py index.html app.js styles.css ./
+COPY ./Code/KeyGeneration.py ./Code/Encrypt.py ./Code/Decrypt.py \
+     ./Deployment/server.py ./Deployment/index.html ./Deployment/credits.html \
+     ./Deployment/app.js ./Deployment/styles.css ./
 
 # Inform Docker (and tooling) that the container listens on port 8000.
 # This does NOT publish the port; use -p 8000:8000 at runtime to do so.

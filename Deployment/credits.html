@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Credits · ECC Toolkit</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Center the card on the page */
+    .credits-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: auto;
+      padding: 40px 24px;
+    }
+
+    .credits-card {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .credits-list {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+    }
+
+    .credits-item {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .credits-item:last-child {
+      border-bottom: none;
+    }
+
+    .role {
+      display: block;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .name {
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .detail {
+      display: block;
+      font-size: 16px;
+      color: var(--text-dim);
+    }
+
+    .email {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .back-link {
+      margin-bottom: 20px;
+      align-self: flex-start;
+    } 
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot"></span>
+      <h1>ECC&nbsp;Toolkit</h1>
+      <span class="subtitle">Credits</span>
+    </div>
+  </header>
+
+  <main class="credits-wrapper">
+    <div class="credits-card">
+      
+      <a href="./index.html" class="back-link">
+        <button class="mini" style="margin-bottom: 20px; font-size: 14px;">← Back to Home</button>
+      </a>
+
+      <div class="card">
+        <h2 style="font-size: 24px; text-align: center; color: var(--accent);">Credits</h2>
+        
+        <ul class="credits-list">
+          <li class="credits-item">
+            <span class="role">Project Guide</span>
+            <span class="name">Prof. Utpal Kumar Ray</span>
+          </li>
+          
+          <li class="credits-item">
+            <span class="role">Student Contributor</span>
+            <span class="name">Irfan Habeeb Gazi</span>
+            <span class="detail">B.E. IT 2026</span>
+            <span class="email">irfanhgazi@gmail.com</span>
+          </li>
+
+          <li class="credits-item">
+            <span class="role">Student Contributor</span>
+            <span class="name">Surjayan Kar</span>
+            <span class="detail">B.E. IT 2026</span>
+            <span class="email">surjayankar@gmail.com</span>
+          </li>
+
+          <li class="credits-item">
+            <span class="role">Student Contributor</span>
+            <span class="name">Vivek Halder</span>
+            <span class="detail">B.E. IT 2026</span>
+            <span class="email">vivke829h@gmail.com</span>
+          </li>
+        </ul>
+
+        <div class="university-footer" style="text-align: center; margin-top: 18px;">
+            <p class="hint" style="font-size: 18px;">Jadavpur University, Salt Lake Campus, Kolkata</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

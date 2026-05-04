@@ -286,11 +286,13 @@ def decrypt(req: DecryptRequest):
 
 
 # ----- Static frontend -----------------------------------------------------
-# Serve only the three known frontend files to avoid exposing Python source.
+# Serve only the known frontend files to avoid exposing Python source.
 
 _STATIC = {
     "/": "index.html",
     "/index.html": "index.html",
+    "/credits": "credits.html",
+    "/credits.html": "credits.html",
     "/app.js": "app.js",
     "/styles.css": "styles.css",
 }

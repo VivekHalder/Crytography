@@ -214,9 +214,7 @@
       <div class="card narrow">
         <h2>About this interface</h2>
         <p>
-          Web frontend for the ECC toolkit at
-          <a href="https://github.com/VivekHalder/Crytography" target="_blank" rel="noopener">github.com/VivekHalder/Crytography</a>.
-          The browser is doing none of the math. Each request shells out to
+          Web frontend for the Elliptic Curve Cryptography toolkit. The browser is doing none of the math. Each request shells out to
           <code>sage KeyGeneration.py</code>, <code>sage Encrypt.py</code>, or <code>sage Decrypt.py</code>
           on the server, with arguments built from the form. Output JSON is read back from disk and returned.
         </p>
@@ -237,16 +235,22 @@
           and Curve25519 (in its underlying Weierstrass / Montgomery form).
         </p>
 
-        <h3>Caveats</h3>
+        <h3>Note</h3>
         <p>
           This is teaching/research code, not a hardened library. Don't encrypt
-          secrets you actually care about with it. For production, use libsodium
-          or the platform's vetted ECDH/HPKE.
+          secrets you actually care about with it.
         </p>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="footer-content">
+        <div>Jadavpur University, Department of Information Technology</div>
+        <div class="muted">Salt Lake Campus, Kolkata</div>
       </div>
-    </section>
-  </main>
+    </footer>
 
-  <script src="app.js"></script>
+    <a href="/credits" class="credits-button">Credits</a>
+    <script src="app.js"></script>
 </body>
 </html>
